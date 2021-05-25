@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployd
+  template:
+    metadata:
+      labels:
+        app: deployd
+    spec:
+      serviceAccountName: deployd-role
+      containers:
+      - name: deployd
+        env:
+        - name: PORT
+          value: "3000"
+        imagePullPolicy: Never
+        image: deployd:0.0.1
+        ports:
+        - name: app
+          containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deployd
+  labels:
+    app: deployd
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30500
+    port: 30500
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: deployd
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: deployd-role
+subjects:
+- kind: ServiceAccount
+  name: deployd-role
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployd-role
