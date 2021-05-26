@@ -49,6 +49,10 @@ class Repositories():
         for rc in repoconfigs:
             self._repos.append(Repository(name=rc["name"], remote=rc["location"],))
 
+    @property
+    def list(self) -> List[Repository]:
+        return self._repos
+
     def update(self) -> None:
         logger.debug(f"calling update on {self._repos}")
 
@@ -56,5 +60,8 @@ class Repositories():
             r.update()
 
     @property
-    def updated(self) -> List[str]:
-        return [repo.name for repo in self._repos if repo.updated]
+    def updated(self) -> List[Repository]:
+        return [repo for repo in self._repos if repo.updated]
+
+    def get_from_name(self, name: str,) -> Repository:
+        return [repo for repo in self.list if repo.name == name][0]
