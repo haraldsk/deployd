@@ -4,7 +4,7 @@ import subprocess
 import json
 
 from typing import List, Optional
-from .config import RepoConfig, REPO_LOCAL_ROOT
+from .config import RepoConfig, REPOS_ROOT, MANIFESTS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -12,28 +12,36 @@ class Deployment():
     def __init__(self, name: str, namespace: str,) -> None:
         self._name = name
         self._namespace = namespace
-        self._path = os.path.join(REPO_LOCAL_ROOT, self._name)
-        self._last_deploy: Optional[subprocess.CompletedProcess] = None
+        self._path = os.path.join(REPOS_ROOT, self._name, MANIFESTS_PATH)
 
     def apply(self) -> bool:
-        command: List[str] = f"kubectl apply --namespace {self._namespace} -k {self._path}/deploy/manifests".split(" ")
-        logging.info(f"running {command}")
-        self._last_deploy: subprocess.CompletedProcess = subprocess.run(command, stdout=subprocess.PIPE)
+        command: List[str] = f"kubectl apply --namespace {self._namespace} -f {self._path}".split(" ")
 
-        print(self._last_deploy.stdout)
+        logger.debug(f"running {command}")
+        deploy: subprocess.CompletedProcess = subprocess.run(command, stdout=subprocess.PIPE)
 
-        if self._last_deploy.returncode == 0:
+        if deploy.returncode == 0:
             return True
 
+        logger.error(deploy.stdout)
         return False
 
-    def status_json(self):
-        command: List[str] = f"kubectl get --namespace {self._namespace} -k {self._path}/deploy/manifests -o json".split(" ")
+    def get(self) -> Optional[dict]:
+        command: List[str] = f"kubectl get --namespace {self._namespace} -f {self._path} -o json".split(" ")
 
-        logging.info(f"running {command}")
-        status: subprocess.CompletedProcess = subprocess.run(command, stdout=subprocess.PIPE)
-        kcout = json.loads(status.stdout)
-        return kcout
+        logger.debug(f"running {command}")
+        deploy: subprocess.CompletedProcess = subprocess.run(command, stdout=subprocess.PIPE)
+
+        try:
+            json_dict = json.loads(deploy.stdout)
+        except json.JSONDecodeError as e:
+            logger.error(e.msg)
+            return None
+
+        if deploy.returncode == 0:
+            return json_dict
+
+        return None
 
     @property
     def name(self):
@@ -50,10 +58,10 @@ class Deployments():
     def list(self) -> List[Deployment]:
         return self._deploys
 
-    def apply(self):
+    def apply(self) -> None:
         for deploy in self.list:
             if not deploy.apply():
-                logger.info(f"Could not deploy {deploy.name}")
+                logger.error(f"Could not deploy {deploy.name}")
 
     def get_from_name(self, name: str,) -> Optional[Deployment]:
         deploy = [d for d in self.list if d.name == name]

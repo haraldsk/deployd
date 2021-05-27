@@ -3,7 +3,7 @@ import logging
 import os
 
 from typing import List
-from .config import RepoConfig, REPO_LOCAL_ROOT
+from .config import RepoConfig, REPOS_ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class Repository():
         self._name = name
         self._remote = remote
 
-        self._path = os.path.join(REPO_LOCAL_ROOT, self._name)
+        self._path = os.path.join(REPOS_ROOT, self._name)
         self._repo = git.Repo.clone_from(self._remote, self._path)
         self._head = self._repo.head.commit.tree
         self._updated = False

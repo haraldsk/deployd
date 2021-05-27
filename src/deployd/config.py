@@ -1,7 +1,8 @@
 from typing import List, TypedDict
 
 
-REPO_LOCAL_ROOT = "/tmp"
+REPOS_ROOT = "/tmp"
+MANIFESTS_PATH = "deploy/manifests"
 
 
 class RepoConfig(TypedDict):
@@ -16,7 +17,12 @@ class RepoConfigs():
                 name="haraldsk/an-application",
                 namespace="haraldsk",
                 location="https://github.com/haraldsk/an-application",
-            )
+            ),
+            RepoConfig(
+                name="haraldsk/an-other-application",
+                namespace="haraldsk",
+                location="https://github.com/haraldsk/an-other-application",
+            ),
         ]
 
     @property

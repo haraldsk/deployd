@@ -18,7 +18,7 @@ repos: Repositories = Repositories(repoconfigs=rcs)
 # initalize deployment
 deploys: Deployments = Deployments(repoconfigs=rcs)
 
-async def update(delta=10):
+async def update_and_deploy(delta=10):
     # deploy all repos
     # blocking call - should run in other thread
     deploys.apply()
@@ -42,18 +42,25 @@ async def update(delta=10):
 @webapp.before_serving
 async def startup():
     loop = asyncio.get_event_loop()
-    webapp.update = loop.create_task(update())
+    webapp.update = loop.create_task(update_and_deploy())
+
 
 @webapp.route("/deployment/<path:name>")
 async def deployment(name) -> Response:
-    logger.info(f"fetching status from {name}")
 
     deploy = deploys.get_from_name(name)
 
+    # check if deployment path exists
     if deploy is None:
-        return jsonify({"deployment": "Unavailable"}), 404
+        return jsonify({"deployment": name, "status": "no such deployment"}), 404
 
-    return jsonify(deploy.status_json())
+    # could not get deployment status
+    status = deploy.get()
+    if status is None:
+        return jsonify({"deployment": name, "status": "failed getting deployment"}), 403
+
+    return jsonify(status)
+
 
 @webapp.route("/healthcheck")
 async def healthcheck() -> Response:
