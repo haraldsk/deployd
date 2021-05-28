@@ -1,11 +1,12 @@
 # Deployd
 
-Deployd is a demo application that runs on minikube and installs
-kubernetes manifests of applications into a configure namespace in
+Deployd is a demo deployment application that runs on minikube.
+It installs kubernetes manifests of applications into a configured namespace in
 minikube.
 
-It will deploy all manifests in the `deploy/manifests` directory of a
-configured application repository.
+It the design deploys all manifests in the `deploy/manifests` directory of a
+configured application, which enables bundling the application source
+and the deployment manifests in the same repository.
 
 It will redeploy on changes to the repository and fetching of the k8s
 objects through an API.
@@ -64,3 +65,25 @@ You can now get the status of the deployed kubernetes objects.
 $ curl http://127.0.0.1:<port>/deployment/haraldsk/an-application
 $ curl http://127.0.0.1:<port>/deployment/haraldsk/an-other-application
 ```
+
+## Bugs and caveats
+* This code should be considered as a demo / alpha state
+* Deployment will run on any push to an application repo, not just to
+  the manifests
+* The code is not fully async as kubectl and git calls run from the
+  event loop thread and will block the Quart server
+* Error handling is quite naive
+* The deployment endpoint passes back the k8s object json, and leaves it
+  up to the client to parse it
+* It would be more natural to use a callback webhook from git or an http
+  request from a build server to let deployd know when to run a deploy,
+  this is seen as not needed at this point in the project
+* tests, there is None
+
+## Further development
+* environment awareness - allow different configurations per environment
+* templating support with helm, kubernetes kustomize or Jinja2 powered
+  manifests
+* integration into build pipelines by triggering deploys and
+  getting proper status by api calls
+* dynamic configuration of repositories to deploy
