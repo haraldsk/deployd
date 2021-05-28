@@ -54,10 +54,6 @@ class Deployments():
         for rc in repoconfigs:
             self._deploys.append(Deployment(name=rc["name"], namespace=rc["namespace"]))
 
-    @property
-    def list(self) -> List[Deployment]:
-        return self._deploys
-
     def apply(self) -> None:
         for deploy in self.list:
             if not deploy.apply():
@@ -70,3 +66,7 @@ class Deployments():
             return deploy[0]
 
         return None
+
+    @property
+    def list(self) -> List[Deployment]:
+        return self._deploys

@@ -25,19 +25,27 @@ To build images for minikube docker environment needs to point to
 minikube
 
 ```
-$ eval $(minikube docker-env)
+$  eval $(minikube -p minikube docker-env)
 ```
 
 ### Building the deployd image
 
 ```
-$ docker build -t deployd:0.0.1
+$ docker build -t deployd:0.0.1 .
 ```
 
 ### Deploying deployd deployment and service
 
 ```
 $ kubectl apply -f k8s/
+```
+
+### Redeploying image in a running minikube
+
+First run docker build as stated above
+
+```
+kubectl -n kube-system rollout restart deployment deployd
 ```
 
 ### Accessing the service

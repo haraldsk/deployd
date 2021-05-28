@@ -11,14 +11,16 @@ class Repository():
     def __init__(self,
                  name: str,
                  remote: str,) -> None:
+
         self._name = name
         self._remote = remote
-
         self._path = os.path.join(REPOS_ROOT, self._name)
+
         try:
             self._repo = git.Repo.clone_from(self._remote, self._path)
         except git.GitCommandError:
-            logger.error(f"Could not clone {self._remote} into {self._path}")
+            raise Exception("Could not clone {self._remote} into {self._path}")
+
         self._head = self._repo.head.commit.tree
         self._updated = False
 
@@ -50,7 +52,7 @@ class Repository():
 
 class Repositories():
 
-    def __init__(self, repoconfigs: List[RepoConfig]) -> None:
+    def __init__(self, repoconfigs: List[RepoConfig],) -> None:
         self._repos: List[Repository] = []
 
         for rc in repoconfigs:
