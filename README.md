@@ -1,15 +1,19 @@
 # Deployd
 
-Deployd is a demo deployment application that runs on minikube.
-It installs kubernetes manifests of applications into a configured namespace in
-minikube.
+Deployd is a demo k8s deployment application that runs on minikube.
 
-It the design deploys all manifests in the `deploy/manifests` directory of a
-configured application, which enables bundling the application source
-and the deployment manifests in the same repository.
+It installs kubernetes manifests bundled with applications into a
+configured namespace in minikube.
 
-It will redeploy on changes to the repository and fetching of the k8s
-objects through an API.
+It deploys all k8s manifests in the `deploy/manifests` directory of a
+configured application repostitory.
+
+Redeploy is triggered on changes to the repository.
+
+The status of the deployed k8s objects can be observed through an API.
+
+By default the application will deploy the two following sample
+applications.
 
 * [an-application](https://github.com/haraldsk/an-application)
 * [an-other-application](https://github.com/haraldsk/an-other-application)
