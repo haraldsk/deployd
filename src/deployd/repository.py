@@ -15,13 +15,20 @@ class Repository():
         self._remote = remote
 
         self._path = os.path.join(REPOS_ROOT, self._name)
-        self._repo = git.Repo.clone_from(self._remote, self._path)
+        try:
+            self._repo = git.Repo.clone_from(self._remote, self._path)
+        except git.GitCommandError:
+            logger.error(f"Could not clone {self._remote} into {self._path}")
         self._head = self._repo.head.commit.tree
         self._updated = False
 
     def update(self) -> bool:
         logger.info(f"calling update on {self._name}")
-        self._repo.remotes.origin.pull()
+        try:
+            self._repo.remotes.origin.pull()
+        except git.GitCommandError:
+            logger.error(f"Could not update git repo in {self._path}")
+            return False
         # updated
         if self._head != self._repo.head.commit.tree:
             self._updated = True
