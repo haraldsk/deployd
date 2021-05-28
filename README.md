@@ -50,7 +50,7 @@ $ kubectl apply -f k8s/
 First run docker build as stated above
 
 ```
-kubectl -n kube-system rollout restart deployment deployd
+$ kubectl -n kube-system rollout restart deployment deployd
 ```
 
 ### Accessing the service
