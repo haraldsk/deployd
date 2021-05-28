@@ -10,34 +10,26 @@ from .repository import Repositories
 
 webapp = Quart(__name__)
 logger = logging.getLogger(__name__)
-
-# get list of repos from config
 rcs: List[RepoConfig] = RepoConfigs().list
-# initalise repos
-repos: Repositories = Repositories(repoconfigs=rcs)
-# initalize deployment
-deploys: Deployments = Deployments(repoconfigs=rcs)
+repos = Repositories(repoconfigs=rcs)
+deploys = Deployments(repoconfigs=rcs)
 
 async def update_and_deploy(delta=10):
     # deploy all repos
-    # blocking call - should run in other thread
     deploys.apply()
 
     while True:
-        # blocking call - should run in other thread
         repos.update()
 
         for repo in repos.updated:
-            logger.info(f"{repo.name} updated")
+            logger.debug(f"{repo.name} updated")
             if not deploys.get_from_name(repo.name).apply():
                 logger.error(f"deployment of {repo.name} failed")
 
             # assuming deployment cannot fail - do not deploy again before new code is pushed
             repo.clear_updated()
 
-        logger.debug("entering await")
         await asyncio.sleep(delta)
-        logger.debug("await returned")
 
 @webapp.before_serving
 async def startup():
@@ -47,7 +39,6 @@ async def startup():
 
 @webapp.route("/deployment/<path:name>")
 async def deployment(name) -> Response:
-
     deploy = deploys.get_from_name(name)
 
     # check if deployment path exists
